@@ -1,0 +1,5 @@
+fastapi
+uvicorn
+starlette_context
+pymemcache
+gunicorn
