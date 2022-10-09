@@ -6,6 +6,10 @@ from fastapi.middleware.cors import CORSMiddleware
 import uuid
 from starlette_context import middleware, plugins, context
 import os
+from mangum import Mangum
+from typing import Union
+
+
 
 try:
     MEMCACHED_ADDR = os.environ['MEMCACHED_ADDR']
@@ -15,6 +19,7 @@ except:
 client = Client(MEMCACHED_ADDR)
 
 app = FastAPI()
+handler = Mangum(app)
 
 app.add_middleware(
     CORSMiddleware,
@@ -33,10 +38,10 @@ app.add_middleware(
 
 
 @app.get("/api/create")
-def create(site: str = 'global', key: str | None = None, value: int = 1):
+def create(site: str = 'global', key: Union[str, None] = None, value: int = 1):
 
     if key is None:
-        key = str(uuid.uuid4())
+        key = str(uuid.uuid4().hex)
     key_hashed = hashlib.md5(key.encode() + site.encode()).hexdigest()
     client.set(key_hashed, str(value))
     return {
@@ -61,10 +66,12 @@ def set(key: str, site: str, amt: int = 1):
         raise HTTPException(status_code=400, detail="amt invalid")
     key = key.encode() + site.encode()
     key = hashlib.md5(key).hexdigest()
-    value = client.incr(key, amt)
+    value = client.get(key)
     if value is None:
         client.set(key, str(amt))
         return {"value": amt}
+    value = int(value) + amt
+    client.set(key, str(value))
     return {"value": int(value)}
     
 
@@ -77,7 +84,7 @@ def set(key: str, site: str, amt: int = 1):
     value = client.get(key)
     if value is None:
         client.set(key, str(amt))
-        return {"value": -1}
+        return {"value": -amt}
     value = int(value) - amt
     client.set(key, str(value))
     return {"value": int(value)}
@@ -86,8 +93,3 @@ def set(key: str, site: str, amt: int = 1):
 @app.get("/")
 async def root():
     return RedirectResponse("/docs")
-
-@app.get("/ip")
-def ip():
-    forwarded_for = context.data["X-Forwarded-For"]
-    return {"ip": forwarded_for}
