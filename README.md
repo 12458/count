@@ -17,7 +17,7 @@ Inside each namespace you can generate all the counters you may need. \
 The hit endpoint provides increment by one counters directly. \
 Each time its requested the counter will increase by one: 
 ```sh
-https://count.staging.shangen.org/api/incr/namespace/key
+https://count.aws.shangen.org/api/incr/namespace/key
 ⇒ HTTP: 200 { "value": 1 }
 ```
 
@@ -28,13 +28,13 @@ https://count.staging.shangen.org/api/incr/namespace/key
 <div id="visits">...</div>
 ```
 ```js
-fetch('https://count.staging.shangen.org/api/incr/{shangen.org}/{visits}')
+fetch('https://count.aws.shangen.org/api/incr/{shangen.org}/{visits}')
   .then((response) => response.json())
   .then((data) => document.getElementById('visits').innerText = data);
 ```
 
 ## API Documentation
-API Documenation can be accessed [here](https://count.staging.shangen.org/docs)
+API Documenation can be accessed [here](https://count.aws.shangen.org/docs)
 
 ## Licence
 All code in this repository is licensed under the MIT License
